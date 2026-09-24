@@ -37,3 +37,6 @@
 - GlobalExceptionHandler con manejo de errores de negocio y validacion
 - Tests de servicio (NotificacionServiceTest, PlantillaServiceTest)
 - Health check via Spring Actuator
+
+[2.0.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v1.3.0...v2.0.0
+[1.3.0]: https://github.com/DavNat13/calisat-ms-notificaciones/releases/tag/v1.3.0
