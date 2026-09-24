@@ -1,5 +1,15 @@
 # Changelog - calisat-ms-notificaciones
 
+## [2.2.0] - 2026-09-24
+
+### Added
+- Consumidor RabbitMQ de órdenes y envíos: colas durables `ordenes.queue` (`orden.confirmada`/`orden.cancelada`) y `envios.queue` (`envio.despachado`/`envio.entregado`) enlazadas al exchange `calisat.exchange`
+- DTOs `OrdenMensaje` y `EnvioMensaje` espejo de la estructura JSON publicada por ms-orden y ms-envios
+- `OrdenListener` y `EnvioListener` (`@RabbitListener`) que resuelven el email del destinatario en el directorio (solo activos con email) y envían el correo contextual; destinatario sin email o evento desconocido se omiten con log
+- `EmailService` ampliado con `enviarOrdenConfirmada`, `enviarOrdenCancelada`, `enviarEnvioDespachado` y `enviarEnvioEntregado` (asuntos: "Tu orden ha sido confirmada", "Tu orden fue cancelada", "Tu envío va en camino", "Tu envío ha sido entregado")
+- Versión pom.xml actualizada a 2.2.0
+- Tests de listeners (`OrdenListenerTest`, `EnvioListenerTest`): confirmación, cancelación, despacho, entrega, destinatario desconocido/inactivo/sin email y evento desconocido
+
 ## [2.1.0] - 2026-09-24
 
 ### Added
@@ -49,6 +59,7 @@
 - Tests de servicio (NotificacionServiceTest, PlantillaServiceTest)
 - Health check via Spring Actuator
 
+[2.2.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v1.3.0...v2.0.0
 [1.3.0]: https://github.com/DavNat13/calisat-ms-notificaciones/releases/tag/v1.3.0
