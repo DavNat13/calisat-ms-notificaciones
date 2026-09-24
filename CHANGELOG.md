@@ -1,5 +1,16 @@
 # Changelog - calisat-ms-notificaciones
 
+## [2.1.0] - 2026-09-24
+
+### Added
+- RBAC con Azure Entra ID: bean `JwtAuthenticationConverter` que extrae el claim `roles` del JWT con prefijo `ROLE_` (normalizado a mayúsculas); endpoints de negocio requieren JWT autenticado
+- Consumidor RabbitMQ: dependencias `spring-boot-starter-amqp` y `spring-boot-starter-mail`
+- Cola durable `notificaciones.queue` enlazada al exchange `calisat.exchange` (routing key `usuario.registrado`) con conversor JSON
+- `RegistroListener` (`@RabbitListener`) que consume el evento de registro y delega en `EmailService`
+- `EmailService` con `JavaMailSender` y `SimpleMailMessage` que envía el correo de bienvenida con asunto "Bienvenido a Calisat"
+- Configuración RabbitMQ (localhost:5672, guest/guest) y SMTP Gmail (smtp.gmail.com:587, auth + STARTTLS) en `application.yaml`
+- Versión pom.xml actualizada a 2.1.0
+
 ## [2.0.0] - 2026-09-23
 
 ### BREAKING CHANGE
@@ -38,5 +49,6 @@
 - Tests de servicio (NotificacionServiceTest, PlantillaServiceTest)
 - Health check via Spring Actuator
 
+[2.1.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v1.3.0...v2.0.0
 [1.3.0]: https://github.com/DavNat13/calisat-ms-notificaciones/releases/tag/v1.3.0

@@ -24,6 +24,24 @@ spring:
           issuer-uri: https://login.microsoftonline.com/e5372bf0-c5e3-4286-887c-79069f209c1f/v2.0
           audience: d221f0d2-1a7c-4872-ad6c-367a1f0717ec
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: calisat.notificaciones@gmail.com
+    password: CONTRASENA_DE_APLICACION_GMAIL
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   port: 8087
 
