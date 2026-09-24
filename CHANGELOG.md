@@ -1,5 +1,20 @@
 # Changelog - calisat-ms-notificaciones
 
+## [2.0.0] - 2026-09-23
+
+### BREAKING CHANGE
+- Versión pom.xml incrementada a 2.0.0 (fase B: integración entre microservicios)
+- Nuevo componente `CarritoAbandonadoScheduler` añadido al contexto con dependencias `CarritoClient`, `DestinatarioService` y `NotificacionService`; cualquier construcción manual de ese scheduler debe inyectarlas
+- El cron de carritos abandonados ingesta notificaciones TRANSACCIONALES (idempotentes por carrito) a partir del directorio de destinatarios (nuevo comportamiento programado diario a las 06:00)
+
+### Added
+- Paquete `client` con cliente RestTemplate aislado `CarritoClient` (GET /api/v1/carrito?usuarioSub=&estado=), sin service discovery
+- URL base por variable de entorno con default localhost: `CALISAT_CARRITO_URL` (http://localhost:8084)
+- `RestTemplateConfig` con el bean `RestTemplate` compartido por los clientes
+- Cron `CarritoAbandonadoScheduler`: diario 06:00, revisa carritos ABIERTO sin actualización ≥30 días de los destinatarios activos e ingesta el aviso (clave `carrito-abandonado-{carritoId}`, sin duplicados)
+- Degradación elegante: si ms-carrito está caído, la pasada del cron se omite con log y el servicio sigue operando (try/catch best-effort)
+- Tests de cliente con `RestTemplate` mockeado (`CarritoClientTest`) y tests del cron (`CarritoAbandonadoSchedulerTest`): aviso, carrito reciente, destinatario inactivo y caída del servicio
+
 ## [1.3.0] - 2026-09-23
 
 ### Added
