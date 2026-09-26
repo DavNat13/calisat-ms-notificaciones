@@ -2,13 +2,13 @@
 
 > Microservicio Spring Boot de notificaciones: ingesta idempotente de eventos, cola con reintentos y backoff, plantillas, preferencias de campaña y cron de carritos abandonados.
 
-![Versión](https://img.shields.io/badge/version-2.0.0-2563EB)
+![Versión](https://img.shields.io/badge/version-2.3.0-2563EB)
 ![Java](https://img.shields.io/badge/Java-21-F89820?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.0-6DB33F?logo=spring&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)
 ![Estado](https://img.shields.io/badge/estado-modo%20acad%C3%A9mico-FACC15)
 
-**Versión actual: `2.0.0`** (definida en `pom.xml` · historial en [`CHANGELOG.md`](CHANGELOG.md))
+**Versión actual: `2.3.0`** (definida en `pom.xml` · historial en [`CHANGELOG.md`](CHANGELOG.md))
 
 ---
 
@@ -65,6 +65,9 @@ flowchart LR
     ENV[calisat-ms-envios :8086] -->|POST /eventos| NOT
     F[calisat-frontend] -->|JWT · historial/preferencias| NOT
     NOT -->|GET carritos · best-effort| CAR[calisat-ms-carrito :8084]
+    ORD -->|exchange| RQ[(RabbitMQ<br/>calisat.exchange<br/>:5672 · UI :15672)]
+    ENV -->|exchange| RQ
+    RQ -->|@RabbitListener| NOT
     NOT --> P[LogEnvioProvider<br/>fase EMAIL/SES]
     NOT --> S[Poller 15 s + Cron 06:00]
     NOT --> PG[(PostgreSQL<br/>calisat_notificacion)]
@@ -105,8 +108,11 @@ Valores de `src/main/resources/application.yaml`, `docker-compose.yml` y variabl
 |-----------|-------|
 | **Puerto del servicio** | **`8087`** (`application.yaml`; Compose publica `8087:8080` con `SERVER_PORT=8080` en contenedor) |
 | Base de datos | PostgreSQL · `calisat_notificacion` |
-| Host de BD (local) | `localhost:5436` (Compose publica `5436:5432`) |
+| Host de BD (Docker Compose) | `postgres-db:5432` (nombre de servicio + puerto interno; valor en `application.yaml`) |
+| Host de BD (ejecución en el host) | `localhost:5436` (Compose publica `5436:5432`; requiere `SPRING_DATASOURCE_URL`) |
 | Usuario / contraseña BD | `postgres` / `postgres` *(solo académico)* |
+| RabbitMQ (Docker Compose) | `rabbitmq:5672` · usuario `guest` / `guest` · UI **`:15672`** |
+| RabbitMQ (ejecución en el host) | `localhost:5672` (puertos `5672` y `15672` publicados; requiere `SPRING_RABBITMQ_HOST`) |
 | `ddl-auto` | `update` |
 | JWT *issuer* | `https://login.microsoftonline.com/e5372bf0-c5e3-4286-887c-79069f209c1f/v2.0` |
 | JWT *audience* | `d221f0d2-1a7c-4872-ad6c-367a1f0717ec` |
@@ -125,29 +131,39 @@ Valores de `src/main/resources/application.yaml`, `docker-compose.yml` y variabl
 
 ## ▶️ Ejecución local
 
-### 1. Base de datos
+### 1. Infraestructura (PostgreSQL + RabbitMQ)
 
 ```bash
-docker compose up -d postgres-db
+docker compose up -d postgres-db rabbitmq
 ```
 
-Levanta PostgreSQL 15 publicado en `localhost:5436`.
+Levanta PostgreSQL 15 publicado en `localhost:5436` y RabbitMQ en `localhost:5672` (Management UI: `http://localhost:15672`, `guest`/`guest`).
 
-### 2. Aplicación
+### 2. Aplicación (en el host)
+
+`application.yaml` apunta a los nombres de servicio de Docker (`postgres-db`, `rabbitmq`), así que al correr fuera del contenedor hay que sobreescribirlos:
 
 ```bash
-# Windows
-mvnw.cmd spring-boot:run
-
 # Linux / macOS
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5436/calisat_notificacion \
+SPRING_RABBITMQ_HOST=localhost \
 ./mvnw spring-boot:run
 ```
 
-### 3. Docker Compose
+```powershell
+# Windows (PowerShell)
+$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5436/calisat_notificacion"
+$env:SPRING_RABBITMQ_HOST="localhost"
+mvnw.cmd spring-boot:run
+```
+
+### 3. Docker Compose (recomendado)
 
 ```bash
 docker compose up --build
 ```
+
+Levanta PostgreSQL 15 + RabbitMQ + app en **8087**, todo resolviéndose por nombre de servicio dentro de la red `calisat-net`.
 
 Servicio en `http://localhost:8087` (Swagger: `/swagger-ui.html`).
 
@@ -262,8 +278,8 @@ curl -X POST http://localhost:8087/api/v1/notificaciones/eventos \
 ### Docker
 
 ```bash
-docker build -t calisat-ms-notificaciones:2.0.0 .
-docker run -p 8087:8080 --name calisat-ms-notificaciones calisat-ms-notificaciones:2.0.0
+docker build -t calisat-ms-notificaciones:2.3.0 .
+docker run -p 8087:8080 --name calisat-ms-notificaciones calisat-ms-notificaciones:2.3.0
 ```
 
 **Dockerfile multi-stage:**
@@ -277,7 +293,7 @@ docker run -p 8087:8080 --name calisat-ms-notificaciones calisat-ms-notificacion
 docker compose up --build
 ```
 
-Levanta PostgreSQL 15 (`calisat_notificacion`, puerto host `5436`) + app en **8087**, red `calisat-net`.
+Levanta PostgreSQL 15 (`calisat_notificacion`, puerto host `5436`) + RabbitMQ 3.13 (`calisat.exchange`, puertos host `5672` AMQP y `15672` UI) + app en **8087**, red `calisat-net` con arranque ordenado por healthchecks (`postgres-db` y `rabbitmq` sanos antes de `app`).
 
 ## 🔗 Microservicios relacionados
 
@@ -295,5 +311,5 @@ Levanta PostgreSQL 15 (`calisat_notificacion`, puerto host `5436`) + app en **80
 
 Proyecto desarrollado en **modo académico**; sin licencia open source formal. Issuer, audience y credenciales están *hardcodeados* con fines educativos; sin RBAC (usuario genérico autenticado) y sin service discovery (URLs por variables de entorno). El despacho real por email (AWS SES) queda fuera de esta fase: el proveedor actual es de logging.
 
-- **Versión actual**: `2.0.0` — *breaking change*: `CarritoAbandonadoScheduler` añadido al contexto con `CarritoClient`, `DestinatarioService` y `NotificacionService`
+- **Versión actual**: `2.3.0` — configuración de red para Docker Compose (BD `postgres-db:5432`, broker `rabbitmq:5672`) y servicio RabbitMQ en `docker-compose.yml`; ver [`CHANGELOG.md`](CHANGELOG.md)
 - **Historial de cambios**: [`CHANGELOG.md`](CHANGELOG.md)

@@ -18,6 +18,25 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: calisat-rabbitmq
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Management UI (http://localhost:15672)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - calisat-net
+
   app:
     build:
       context: .
@@ -30,8 +49,13 @@ services:
       # y la app escucha en 8080 (imagen estandar); en host usa localhost:5436:8087.
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/calisat_notificacion
       SERVER_PORT: "8080"
+      # Mismo patron que application.yaml: el broker se resuelve por nombre de servicio
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: "5672"
     depends_on:
       postgres-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - calisat-net
@@ -42,3 +66,4 @@ networks:
 
 volumes:
   calisat_notificacion_data:
+  rabbitmq_data:

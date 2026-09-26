@@ -1,5 +1,17 @@
 # Changelog - calisat-ms-notificaciones
 
+## [2.3.0] - 2026-09-26
+
+### Added
+- Servicio `rabbitmq` en `docker-compose.yml` (`rabbitmq:3.13-management`, credenciales `guest`/`guest`, healthcheck `rabbitmq-diagnostics ping`) en la red `calisat-net`, con volumen `rabbitmq_data` y puertos publicados `5672` (AMQP) y `15672` (Management UI)
+- `app` en Compose depende de `postgres-db` **y** `rabbitmq` con `condition: service_healthy`, y recibe `SPRING_RABBITMQ_HOST=rabbitmq` y `SPRING_RABBITMQ_PORT=5672`
+- README: hosts de BD y RabbitMQ en Compose vs. ejecución en el host, ejecución local con overrides `SPRING_DATASOURCE_URL`/`SPRING_RABBITMQ_HOST`, despliegue con healthchecks y diagrama con el broker
+- Versión pom.xml actualizada a 2.3.0
+
+### Changed
+- `spring.datasource.url` apunta al servicio de Docker Compose `postgres-db:5432` (antes `localhost:5436`)
+- `spring.rabbitmq.host` apunta al servicio `rabbitmq` dentro de la red Compose (antes `localhost`)
+
 ## [2.2.0] - 2026-09-24
 
 ### Added
@@ -59,6 +71,7 @@
 - Tests de servicio (NotificacionServiceTest, PlantillaServiceTest)
 - Health check via Spring Actuator
 
+[2.3.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/DavNat13/calisat-ms-notificaciones/compare/v1.3.0...v2.0.0

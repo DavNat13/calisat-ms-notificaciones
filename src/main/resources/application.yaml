@@ -3,7 +3,7 @@ spring:
     name: calisat-ms-notificaciones
 
   datasource:
-    url: jdbc:postgresql://localhost:5436/calisat_notificacion
+    url: jdbc:postgresql://postgres-db:5432/calisat_notificacion
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -25,7 +25,7 @@ spring:
           audience: d221f0d2-1a7c-4872-ad6c-367a1f0717ec
 
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: 5672
     username: guest
     password: guest
@@ -33,8 +33,9 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: calisat.notificaciones@gmail.com
-    password: CONTRASENA_DE_APLICACION_GMAIL
+    username: calisatspa@gmail.com
+    password: cczoeqnobsilxzgm
+
     properties:
       mail:
         smtp:
