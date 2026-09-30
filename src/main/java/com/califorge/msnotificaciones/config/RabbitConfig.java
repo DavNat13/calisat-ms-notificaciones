@@ -10,10 +10,12 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 /**
  * Configuracion RabbitMQ del consumidor: colas enlazadas al exchange
  * compartido calisat.exchange de los productores (ms-usuarios, ms-orden,
- * ms-envios), con conversor JSON.
+ * ms-envios, ms-inventario, ms-pagos), dead-letter unificada y conversor JSON.
  */
 @Configuration
 public class RabbitConfig {
@@ -31,14 +33,36 @@ public class RabbitConfig {
     public static final String ROUTING_KEY_ENVIO_DESPACHADO = "envio.despachado";
     public static final String ROUTING_KEY_ENVIO_ENTREGADO = "envio.entregado";
 
+    public static final String QUEUE_INVENTARIO = "inventario.alertas.queue";
+    public static final String ROUTING_KEY_STOCK_CRITICO = "inventario.stock.critico";
+
+    public static final String QUEUE_PAGOS = "pagos.procesados.queue";
+    public static final String ROUTING_KEY_PAGO_PROCESADO = "pago.procesado";
+
+    /** Exchange directo de dead-letter y clave con la que llegan los fallidos. */
+    public static final String DEAD_LETTER_EXCHANGE = "calisat.dlx";
+    public static final String DEAD_LETTER_ROUTING_KEY = "dlq.general";
+    public static final String QUEUE_DLQ = "dlq.general.queue";
+
+    /** Argumentos estandar de dead-letter de todas las colas de trabajo. */
+    static Map<String, Object> argumentosDeadLetter() {
+        return Map.of("x-dead-letter-exchange", DEAD_LETTER_EXCHANGE,
+                "x-dead-letter-routing-key", DEAD_LETTER_ROUTING_KEY);
+    }
+
     @Bean
     public DirectExchange calisatExchange() {
         return new DirectExchange(EXCHANGE, true, false);
     }
 
     @Bean
+    public DirectExchange deadLetterExchange() {
+        return new DirectExchange(DEAD_LETTER_EXCHANGE, true, false);
+    }
+
+    @Bean
     public Queue notificacionesQueue() {
-        return QueueBuilder.durable(QUEUE).build();
+        return QueueBuilder.durable(QUEUE).withArguments(argumentosDeadLetter()).build();
     }
 
     @Bean
@@ -48,7 +72,7 @@ public class RabbitConfig {
 
     @Bean
     public Queue ordenesQueue() {
-        return QueueBuilder.durable(QUEUE_ORDENES).build();
+        return QueueBuilder.durable(QUEUE_ORDENES).withArguments(argumentosDeadLetter()).build();
     }
 
     @Bean
@@ -63,7 +87,7 @@ public class RabbitConfig {
 
     @Bean
     public Queue enviosQueue() {
-        return QueueBuilder.durable(QUEUE_ENVIOS).build();
+        return QueueBuilder.durable(QUEUE_ENVIOS).withArguments(argumentosDeadLetter()).build();
     }
 
     @Bean
@@ -74,6 +98,36 @@ public class RabbitConfig {
     @Bean
     public Binding envioEntregadoBinding() {
         return BindingBuilder.bind(enviosQueue()).to(calisatExchange()).with(ROUTING_KEY_ENVIO_ENTREGADO);
+    }
+
+    @Bean
+    public Queue inventarioAlertasQueue() {
+        return QueueBuilder.durable(QUEUE_INVENTARIO).withArguments(argumentosDeadLetter()).build();
+    }
+
+    @Bean
+    public Binding inventarioAlertasBinding() {
+        return BindingBuilder.bind(inventarioAlertasQueue()).to(calisatExchange()).with(ROUTING_KEY_STOCK_CRITICO);
+    }
+
+    @Bean
+    public Queue pagosProcesadosQueue() {
+        return QueueBuilder.durable(QUEUE_PAGOS).withArguments(argumentosDeadLetter()).build();
+    }
+
+    @Bean
+    public Binding pagosProcesadosBinding() {
+        return BindingBuilder.bind(pagosProcesadosQueue()).to(calisatExchange()).with(ROUTING_KEY_PAGO_PROCESADO);
+    }
+
+    @Bean
+    public Queue dlqGeneralQueue() {
+        return QueueBuilder.durable(QUEUE_DLQ).build();
+    }
+
+    @Bean
+    public Binding dlqGeneralBinding() {
+        return BindingBuilder.bind(dlqGeneralQueue()).to(deadLetterExchange()).with(DEAD_LETTER_ROUTING_KEY);
     }
 
     @Bean

@@ -1,13 +1,11 @@
 package com.califorge.msnotificaciones.controller;
 
-import com.califorge.msnotificaciones.dto.IntentoEnvioResponse;
 import com.califorge.msnotificaciones.dto.NotificacionEnviarRequest;
 import com.califorge.msnotificaciones.dto.NotificacionEventoRequest;
 import com.califorge.msnotificaciones.dto.NotificacionResponse;
 import com.califorge.msnotificaciones.model.EstadoNotificacion;
-import com.califorge.msnotificaciones.model.IntentoEnvio;
 import com.califorge.msnotificaciones.model.Notificacion;
-import com.califorge.msnotificaciones.repository.IntentoEnvioRepository;
+import com.califorge.msnotificaciones.service.NotificacionDetalleService;
 import com.califorge.msnotificaciones.service.NotificacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,26 +28,28 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * Endpoints de notificaciones. Sin RBAC: todos requieren solo estar
- * autenticado con el usuario generico de Azure Entra ID; el scope por
- * usuario se hace con el sub del JWT (mis-notificaciones, enviar).
+ * Endpoints de notificaciones. Sin RBAC: cualquier usuario autenticado con
+ * JWT; el scope por usuario se hace con el sub del token.
  */
 @RestController
 @RequestMapping("/api/v1/notificaciones")
 @Tag(name = "Notificaciones", description = "Ingesta idempotente de eventos, envio directo, historial y reintentos. Sin RBAC: cualquier usuario autenticado; el scope por usuario usa el sub del JWT.")
 public class NotificacionController {
 
+    /** {id} restringido a UUID canonico: patron disjunto de las rutas literales
+     * (p. ej. /mis-notificaciones); un segmento no-UUID responde 404, no 400. */
+    static final String UUID_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+
     private final NotificacionService notificacionService;
-    private final IntentoEnvioRepository intentoEnvioRepository;
+    private final NotificacionDetalleService detalleService;
 
     public NotificacionController(NotificacionService notificacionService,
-                                  IntentoEnvioRepository intentoEnvioRepository) {
+                                  NotificacionDetalleService detalleService) {
         this.notificacionService = notificacionService;
-        this.intentoEnvioRepository = intentoEnvioRepository;
+        this.detalleService = detalleService;
     }
 
     /**
@@ -107,6 +107,7 @@ public class NotificacionController {
     /**
      * GET /api/v1/notificaciones/mis-notificaciones
      * Notificaciones propias del usuario autenticado (in-app).
+     * Ruta literal declarada ANTES de /{id} (intencion documentada).
      */
     @Operation(summary = "Mis notificaciones", description = "Notificaciones propias del usuario autenticado (sub del JWT), paginadas. Requiere JWT; sin roles.")
     @GetMapping("/mis-notificaciones")
@@ -125,17 +126,11 @@ public class NotificacionController {
      * Detalle de la notificacion con su traza de intentos.
      */
     @Operation(summary = "Detalle de notificacion", description = "Detalle de la notificacion con la traza completa de intentos de envio. 404 si no existe. Requiere JWT; sin roles.")
-    @GetMapping("/{id}")
+    @GetMapping("/{id:" + UUID_REGEX + "}")
     public ResponseEntity<NotificacionResponse> detalle(
             @Parameter(name = "id", description = "UUID de la notificacion.", required = true)
             @PathVariable UUID id) {
-        Notificacion notificacion = notificacionService.obtenerPorId(id);
-        List<IntentoEnvioResponse> intentos = intentoEnvioRepository
-                .findByNotificacionIdOrderByNumeroIntentoAsc(id)
-                .stream()
-                .map(IntentoEnvioResponse::desde)
-                .toList();
-        return ResponseEntity.ok(NotificacionResponse.desde(notificacion, intentos));
+        return ResponseEntity.ok(detalleService.detalleConIntentos(id));
     }
 
     /**
@@ -143,7 +138,7 @@ public class NotificacionController {
      * Fuerza el reintento de una notificacion FALLIDA/REINTENTO/CANCELADO.
      */
     @Operation(summary = "Forzar reintento", description = "Devuelve una notificacion FALLIDA/REINTENTO/CANCELADO a PENDIENTE con reintento inmediato. 409 si el estado actual no lo permite. Requiere JWT; sin roles.")
-    @PostMapping("/{id}/reintentar")
+    @PostMapping("/{id:" + UUID_REGEX + "}/reintentar")
     public ResponseEntity<NotificacionResponse> reintentar(
             @Parameter(name = "id", description = "UUID de la notificacion.", required = true)
             @PathVariable UUID id) {
