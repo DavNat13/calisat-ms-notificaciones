@@ -102,7 +102,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<Map<String, Object>> metodoNoSoportado(
             org.springframework.web.HttpRequestMethodNotSupportedException ex) {
-        log.warn("Metodo HTTP no soportado para {}: soportados {}", ex.getRequestURL(), ex.getSupportedMethods());
+        log.warn("Metodo HTTP {} no soportado: soportados {}", ex.getMethod(), ex.getSupportedMethods());
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(Map.of("mensaje", "Metodo HTTP no soportado para este recurso",
                         "soportados", String.join(", ", ex.getSupportedMethods())));
