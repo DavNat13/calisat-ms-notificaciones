@@ -105,4 +105,17 @@ public class EmailService {
         mailSender.send(mensaje);
         log.info("Correo de envio entregado enviado a {}", email);
     }
+
+    /**
+     * Envio generico de asunto/cuerpo tal cual los recibe (lo usa
+     * EmailEnvioProvider para eventos automatizados y envio manual del admin).
+     */
+    public void enviar(String destino, String asunto, String cuerpo) {
+        SimpleMailMessage mensaje = new SimpleMailMessage();
+        mensaje.setTo(destino);
+        mensaje.setSubject(asunto);
+        mensaje.setText(cuerpo);
+        mailSender.send(mensaje);
+        log.info("Correo enviado a {} con asunto \"{}\"", destino, asunto);
+    }
 }
