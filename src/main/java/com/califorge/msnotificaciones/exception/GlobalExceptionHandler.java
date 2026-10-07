@@ -97,6 +97,17 @@ public class GlobalExceptionHandler {
                 .body(Map.of("mensaje", "Recurso no encontrado"));
     }
 
+    /** GET sobre una ruta que solo declara POST/PUT/DELETE (p. ej.
+     *  /eventos, /enviar, /{id}/reintentar) responde 405 y no 500. */
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> metodoNoSoportado(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        log.warn("Metodo HTTP no soportado para {}: soportados {}", ex.getRequestURL(), ex.getSupportedMethods());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(Map.of("mensaje", "Metodo HTTP no soportado para este recurso",
+                        "soportados", String.join(", ", ex.getSupportedMethods())));
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> integridad(DataIntegrityViolationException ex) {
         log.warn("Restriccion de datos violada: {}", ex.getMostSpecificCause().getMessage());

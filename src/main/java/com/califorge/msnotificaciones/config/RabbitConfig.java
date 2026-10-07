@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Configuracion RabbitMQ del consumidor: colas enlazadas al exchange
  * compartido calisat.exchange de los productores (ms-usuarios, ms-orden,
- * ms-envios, ms-inventario, ms-pagos), dead-letter unificada y conversor JSON.
+ * ms-envios, ms-inventario), dead-letter unificada y conversor JSON.
  */
 @Configuration
 public class RabbitConfig {
@@ -35,9 +35,6 @@ public class RabbitConfig {
 
     public static final String QUEUE_INVENTARIO = "inventario.alertas.queue";
     public static final String ROUTING_KEY_STOCK_CRITICO = "inventario.stock.critico";
-
-    public static final String QUEUE_PAGOS = "pagos.procesados.queue";
-    public static final String ROUTING_KEY_PAGO_PROCESADO = "pago.procesado";
 
     /** Exchange directo de dead-letter y clave con la que llegan los fallidos. */
     public static final String DEAD_LETTER_EXCHANGE = "calisat.dlx";
@@ -108,16 +105,6 @@ public class RabbitConfig {
     @Bean
     public Binding inventarioAlertasBinding() {
         return BindingBuilder.bind(inventarioAlertasQueue()).to(calisatExchange()).with(ROUTING_KEY_STOCK_CRITICO);
-    }
-
-    @Bean
-    public Queue pagosProcesadosQueue() {
-        return QueueBuilder.durable(QUEUE_PAGOS).withArguments(argumentosDeadLetter()).build();
-    }
-
-    @Bean
-    public Binding pagosProcesadosBinding() {
-        return BindingBuilder.bind(pagosProcesadosQueue()).to(calisatExchange()).with(ROUTING_KEY_PAGO_PROCESADO);
     }
 
     @Bean

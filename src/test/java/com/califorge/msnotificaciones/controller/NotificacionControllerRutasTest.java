@@ -77,6 +77,28 @@ class NotificacionControllerRutasTest {
         verifyNoInteractions(detalle, notificaciones);
     }
 
+    /** GET sobre rutas que solo declaran POST responde 405 (nunca 500). */
+    @Test
+    void getSobreRutasSoloPostResponde405() throws Exception {
+        mvc.perform(get(BASE + "/eventos")).andExpect(status().isMethodNotAllowed());
+        mvc.perform(get(BASE + "/enviar")).andExpect(status().isMethodNotAllowed());
+        mvc.perform(get(BASE + "/" + ID + "/reintentar")).andExpect(status().isMethodNotAllowed());
+
+        verifyNoInteractions(detalle, notificaciones);
+    }
+
+    /** Ninguna ruta literal captura ni es capturada por /{id}. */
+    @Test
+    void rutasLiteralesDeGetSiguenDisjuntasDelId() throws Exception {
+        when(notificaciones.misNotificaciones(any(), any())).thenReturn(Page.empty());
+        when(notificaciones.historial(any(), any())).thenReturn(Page.empty());
+
+        mvc.perform(get(BASE + "/mis-notificaciones")).andExpect(status().isOk());
+        mvc.perform(get(BASE)).andExpect(status().isOk());
+
+        verifyNoInteractions(detalle);
+    }
+
     /** Sustituye al resolver de @AuthenticationPrincipal en el contexto standalone. */
     private static final class JwtStub implements HandlerMethodArgumentResolver {
 

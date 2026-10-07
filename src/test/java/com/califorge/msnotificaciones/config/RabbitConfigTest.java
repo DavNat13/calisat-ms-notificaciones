@@ -3,9 +3,11 @@ package com.califorge.msnotificaciones.config;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Queue;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -17,15 +19,31 @@ class RabbitConfigTest {
     private final RabbitConfig config = new RabbitConfig();
 
     @Test
-    void colasDeAlertasYPagosSeEnlazanAlExchangeCompartido() {
+    void colaDeAlertasDeInventarioSeEnlazaAlExchangeCompartido() {
         assertEquals("inventario.alertas.queue", config.inventarioAlertasQueue().getName());
         assertEquals("calisat.exchange", config.inventarioAlertasBinding().getExchange());
         assertEquals("inventario.alertas.queue", config.inventarioAlertasBinding().getDestination());
         assertEquals("inventario.stock.critico", config.inventarioAlertasBinding().getRoutingKey());
+    }
 
-        assertEquals("pagos.procesados.queue", config.pagosProcesadosQueue().getName());
-        assertEquals("calisat.exchange", config.pagosProcesadosBinding().getExchange());
-        assertEquals("pago.procesado", config.pagosProcesadosBinding().getRoutingKey());
+    @Test
+    void colaDePagosFueEliminada() {
+        List<String> colas = Arrays.stream(RabbitConfig.class.getDeclaredMethods())
+                .filter(m -> m.getName().endsWith("Queue") && m.getParameterCount() == 0)
+                .map(m -> {
+                    try {
+                        return ((Queue) m.invoke(config)).getName();
+                    } catch (ReflectiveOperationException e) {
+                        throw new IllegalStateException(e);
+                    }
+                })
+                .sorted()
+                .toList();
+
+        assertFalse(colas.contains("pagos.procesados.queue"));
+        assertEquals(List.of("dlq.general.queue", "envios.queue", "inventario.alertas.queue",
+                        "notificaciones.queue", "ordenes.queue"),
+                colas);
     }
 
     @Test
@@ -43,8 +61,7 @@ class RabbitConfigTest {
                 config.notificacionesQueue(),
                 config.ordenesQueue(),
                 config.enviosQueue(),
-                config.inventarioAlertasQueue(),
-                config.pagosProcesadosQueue());
+                config.inventarioAlertasQueue());
 
         for (Queue cola : colasDeTrabajo) {
             assertEquals("calisat.dlx", cola.getArguments().get("x-dead-letter-exchange"));
