@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -96,6 +97,20 @@ class NotificacionControllerRutasTest {
         mvc.perform(get(BASE + "/mis-notificaciones")).andExpect(status().isOk());
         mvc.perform(get(BASE)).andExpect(status().isOk());
 
+        verifyNoInteractions(detalle);
+    }
+
+    /** GET /api/v1/notificaciones?page=0&size=20 (paginacion del frontend)
+     *  debe responder 200, nunca 405: la raiz solo declara GET. */
+    @Test
+    void paginacionPorConsultaDeGetNoResponde405() throws Exception {
+        when(notificaciones.historial(any(), any())).thenReturn(Page.empty());
+
+        mvc.perform(get(BASE + "?page=0&size=20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray());
+
+        verify(notificaciones).historial(any(), any());
         verifyNoInteractions(detalle);
     }
 
