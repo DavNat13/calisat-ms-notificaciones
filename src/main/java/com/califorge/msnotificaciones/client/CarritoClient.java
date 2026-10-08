@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * Cliente HTTP de calisat-ms-carrito (fase B). Sin service discovery:
- * base URL = CALISAT_CARRITO_URL (default http://localhost:8084).
+ * base URL = calisat.gateway.url (el API Gateway: cero IPs en el repo).
  *
  * <p>Consumido por el cron de carritos abandonados (listado interno del
  * carrito, ver diseno: GET /api/v1/carrito?usuarioSub=&estado=).</p>
@@ -28,7 +28,7 @@ public class CarritoClient {
     private final String baseUrl;
 
     public CarritoClient(RestTemplate restTemplate,
-                         @Value("${CALISAT_CARRITO_URL:http://localhost:8084}") String baseUrl) {
+                         @Value("${calisat.urls.carrito:${calisat.gateway.url}}") String baseUrl) {
         this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
     }
