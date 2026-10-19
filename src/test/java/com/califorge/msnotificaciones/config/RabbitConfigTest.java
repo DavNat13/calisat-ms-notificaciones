@@ -41,8 +41,8 @@ class RabbitConfigTest {
                 .toList();
 
         assertFalse(colas.contains("pagos.procesados.queue"));
-        assertEquals(List.of("dlq.general.queue", "envios.queue", "inventario.alertas.queue",
-                        "notificaciones.queue", "ordenes.queue"),
+        assertEquals(List.of("auditoria.queue", "dlq.general.queue", "envios.queue",
+                        "inventario.alertas.queue", "notificaciones.queue", "ordenes.queue"),
                 colas);
     }
 
@@ -61,7 +61,8 @@ class RabbitConfigTest {
                 config.notificacionesQueue(),
                 config.ordenesQueue(),
                 config.enviosQueue(),
-                config.inventarioAlertasQueue());
+                config.inventarioAlertasQueue(),
+                config.auditoriaQueue());
 
         for (Queue cola : colasDeTrabajo) {
             assertEquals("calisat.dlx", cola.getArguments().get("x-dead-letter-exchange"));
@@ -77,5 +78,20 @@ class RabbitConfigTest {
         assertEquals("orden.cancelada", config.ordenCanceladaBinding().getRoutingKey());
         assertEquals("envio.despachado", config.envioDespachadoBinding().getRoutingKey());
         assertEquals("envio.entregado", config.envioEntregadoBinding().getRoutingKey());
+    }
+
+    @Test
+    void colaDeAuditoriaSeEnlazaAlExchangeConTresClaves() {
+        assertEquals("auditoria.queue", config.auditoriaQueue().getName());
+
+        assertEquals("calisat.exchange", config.auditoriaUsuarioBinding().getExchange());
+        assertEquals("auditoria.queue", config.auditoriaUsuarioBinding().getDestination());
+        assertEquals("auditoria.usuario", config.auditoriaUsuarioBinding().getRoutingKey());
+
+        assertEquals("auditoria.queue", config.auditoriaOrdenBinding().getDestination());
+        assertEquals("auditoria.orden", config.auditoriaOrdenBinding().getRoutingKey());
+
+        assertEquals("auditoria.queue", config.auditoriaEnvioBinding().getDestination());
+        assertEquals("auditoria.envio", config.auditoriaEnvioBinding().getRoutingKey());
     }
 }

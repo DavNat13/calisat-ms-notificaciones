@@ -2,13 +2,13 @@
 
 > Microservicio Spring Boot de notificaciones: ingesta idempotente de eventos, cola con reintentos y backoff, plantillas, preferencias de campaña y cron de carritos abandonados.
 
-![Versión](https://img.shields.io/badge/version-2.3.0-2563EB)
+![Versión](https://img.shields.io/badge/version-2.4.0-2563EB)
 ![Java](https://img.shields.io/badge/Java-21-F89820?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.0-6DB33F?logo=spring&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)
 ![Estado](https://img.shields.io/badge/estado-modo%20acad%C3%A9mico-FACC15)
 
-**Versión actual: `2.3.0`** (definida en `pom.xml` · historial en [`CHANGELOG.md`](CHANGELOG.md))
+**Versión actual: `2.4.0`** (definida en `pom.xml` · historial en [`CHANGELOG.md`](CHANGELOG.md))
 
 ---
 
@@ -203,7 +203,15 @@ Servicio en `http://localhost:8087` (Swagger: `/swagger-ui.html`).
 |--------|------|-------------|------|
 | `GET` | `/api/v1/destinatarios` | Directorio de destinatarios ordenado por nombre | JWT |
 
-**Total: 14 endpoints** (4 controladores) · *Swagger UI*: `/swagger-ui.html`
+### Auditoría — `/api/v1/auditoria`
+
+Historial de los eventos de usuario/orden/envío procesados por la cola interna `auditoria.queue` (productor y consumidor en este microservicio), con el resultado del correo automatizado asociado.
+
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| `GET` | `/api/v1/auditoria` | Historial paginado con filtros opcionales `tipo` y `resultado` | ADMINISTRADOR |
+
+**Total: 15 endpoints** (5 controladores) · *Swagger UI*: `/swagger-ui.html`
 
 ### Ejemplo
 
@@ -278,8 +286,8 @@ curl -X POST http://localhost:8087/api/v1/notificaciones/eventos \
 ### Docker
 
 ```bash
-docker build -t calisat-ms-notificaciones:2.3.0 .
-docker run -p 8087:8080 --name calisat-ms-notificaciones calisat-ms-notificaciones:2.3.0
+docker build -t calisat-ms-notificaciones:2.4.0 .
+docker run -p 8087:8080 --name calisat-ms-notificaciones calisat-ms-notificaciones:2.4.0
 ```
 
 **Dockerfile multi-stage:**
@@ -311,5 +319,5 @@ Levanta PostgreSQL 15 (`calisat_notificacion`, puerto host `5436`) + RabbitMQ 3.
 
 Proyecto desarrollado en **modo académico**; sin licencia open source formal. Issuer, audience y credenciales están *hardcodeados* con fines educativos; sin RBAC (usuario genérico autenticado) y sin service discovery (URLs por variables de entorno). El despacho real por email (AWS SES) queda fuera de esta fase: el proveedor actual es de logging.
 
-- **Versión actual**: `2.3.0` — configuración de red para Docker Compose (BD `postgres-db:5432`, broker `rabbitmq:5672`) y servicio RabbitMQ en `docker-compose.yml`; ver [`CHANGELOG.md`](CHANGELOG.md)
+- **Versión actual**: `2.4.0` — cola propia de auditoría `auditoria.queue` (productor y consumidor en este MS), endpoint `GET /api/v1/auditoria` (solo ADMINISTRADOR) y auditoría del resultado de los correos automatizados; ver [`CHANGELOG.md`](CHANGELOG.md)
 - **Historial de cambios**: [`CHANGELOG.md`](CHANGELOG.md)

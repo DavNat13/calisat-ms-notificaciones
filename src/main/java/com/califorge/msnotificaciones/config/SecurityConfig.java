@@ -108,6 +108,10 @@ public class SecurityConfig {
                         .hasAnyRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.GET, "/api/v1/notificaciones/*")
                         .hasAnyRole("ADMINISTRADOR")
+
+                // Auditoria interna: solo el panel de administracion.
+                .requestMatchers(HttpMethod.GET, "/api/v1/auditoria")
+                        .hasAnyRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.GET, "/api/v1/destinatarios")
                         .hasAnyRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.POST, "/api/v1/destinatarios")

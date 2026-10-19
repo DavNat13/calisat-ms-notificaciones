@@ -36,6 +36,12 @@ public class RabbitConfig {
     public static final String QUEUE_INVENTARIO = "inventario.alertas.queue";
     public static final String ROUTING_KEY_STOCK_CRITICO = "inventario.stock.critico";
 
+    /** Cola propia de auditoria: productor y consumidor viven en este MS. */
+    public static final String QUEUE_AUDITORIA = "auditoria.queue";
+    public static final String ROUTING_KEY_AUDITORIA_USUARIO = "auditoria.usuario";
+    public static final String ROUTING_KEY_AUDITORIA_ORDEN = "auditoria.orden";
+    public static final String ROUTING_KEY_AUDITORIA_ENVIO = "auditoria.envio";
+
     /** Exchange directo de dead-letter y clave con la que llegan los fallidos. */
     public static final String DEAD_LETTER_EXCHANGE = "calisat.dlx";
     public static final String DEAD_LETTER_ROUTING_KEY = "dlq.general";
@@ -105,6 +111,26 @@ public class RabbitConfig {
     @Bean
     public Binding inventarioAlertasBinding() {
         return BindingBuilder.bind(inventarioAlertasQueue()).to(calisatExchange()).with(ROUTING_KEY_STOCK_CRITICO);
+    }
+
+    @Bean
+    public Queue auditoriaQueue() {
+        return QueueBuilder.durable(QUEUE_AUDITORIA).withArguments(argumentosDeadLetter()).build();
+    }
+
+    @Bean
+    public Binding auditoriaUsuarioBinding() {
+        return BindingBuilder.bind(auditoriaQueue()).to(calisatExchange()).with(ROUTING_KEY_AUDITORIA_USUARIO);
+    }
+
+    @Bean
+    public Binding auditoriaOrdenBinding() {
+        return BindingBuilder.bind(auditoriaQueue()).to(calisatExchange()).with(ROUTING_KEY_AUDITORIA_ORDEN);
+    }
+
+    @Bean
+    public Binding auditoriaEnvioBinding() {
+        return BindingBuilder.bind(auditoriaQueue()).to(calisatExchange()).with(ROUTING_KEY_AUDITORIA_ENVIO);
     }
 
     @Bean

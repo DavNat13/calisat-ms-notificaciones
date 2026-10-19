@@ -1,5 +1,16 @@
 # Changelog - calisat-ms-notificaciones
 
+## [2.4.0] - 2026-10-18
+
+### Added
+- Cola propia de auditoría `auditoria.queue` (durable, con dead-letter `dlq.general`) enlazada al exchange `calisat.exchange` con tres routing keys nuevas: `auditoria.usuario`, `auditoria.orden` y `auditoria.envio`; productor y consumidor viven únicamente en este microservicio
+- `AuditoriaProductor` (best-effort con `RabbitTemplate`): publica el resultado del procesamiento de cada evento de usuario/orden/envío sin interrumpir el envío del correo si el broker falla
+- `AuditoriaListener` (`@RabbitListener` sobre `auditoria.queue`) y `AuditoriaService` idempotente por `clave` que persiste cada evento en la nueva tabla `auditoria_evento` (entidad `AuditoriaEvento`, enums `TipoAuditoria` y `ResultadoAuditoria`; resultado del correo: `ENVIADO`, `FALLIDO`, `SIN_DESTINATARIO`, `EVENTO_DESCONOCIDO`)
+- `RegistroListener`, `OrdenListener` y `EnvioListener` auditados: envuelven el envío SMTP en try/catch (un fallo SMTP ya no se propaga ni provoca reentregas infinitas del mensaje) y publican el resultado del correo en `auditoria.queue`
+- Endpoint `GET /api/v1/auditoria?page=&size=&tipo=&resultado=` (`AuditoriaController`) con historial paginado y filtros opcionales; restringido a `ROLE_ADMINISTRADOR` en `SecurityConfig`
+- Tests: `AuditoriaServiceTest`, `AuditoriaListenerTest`, `AuditoriaControllerRutasTest`; `RabbitConfigTest` y los tres tests de listeners ampliados para cubrir la publicación de auditoría
+- Versión pom.xml actualizada a 2.4.0
+
 ## [2.3.0] - 2026-09-26
 
 ### Added
