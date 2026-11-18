@@ -19,11 +19,10 @@ class RabbitConfigTest {
     private final RabbitConfig config = new RabbitConfig();
 
     @Test
-    void colaDeAlertasDeInventarioSeEnlazaAlExchangeCompartido() {
-        assertEquals("inventario.alertas.queue", config.inventarioAlertasQueue().getName());
-        assertEquals("calisat.exchange", config.inventarioAlertasBinding().getExchange());
-        assertEquals("inventario.alertas.queue", config.inventarioAlertasBinding().getDestination());
-        assertEquals("inventario.stock.critico", config.inventarioAlertasBinding().getRoutingKey());
+    void exchangePrincipalEsTopicYDurable() {
+        assertEquals("calisat.exchange", config.calisatExchange().getName());
+        assertEquals("topic", config.calisatExchange().getType());
+        assertTrue(config.calisatExchange().isDurable());
     }
 
     @Test
@@ -42,7 +41,7 @@ class RabbitConfigTest {
 
         assertFalse(colas.contains("pagos.procesados.queue"));
         assertEquals(List.of("auditoria.queue", "dlq.general.queue", "envios.queue",
-                        "inventario.alertas.queue", "notificaciones.queue", "ordenes.queue"),
+                        "notificaciones.queue", "ordenes.queue"),
                 colas);
     }
 
@@ -61,7 +60,6 @@ class RabbitConfigTest {
                 config.notificacionesQueue(),
                 config.ordenesQueue(),
                 config.enviosQueue(),
-                config.inventarioAlertasQueue(),
                 config.auditoriaQueue());
 
         for (Queue cola : colasDeTrabajo) {

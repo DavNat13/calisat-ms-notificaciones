@@ -4,6 +4,7 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -33,9 +34,6 @@ public class RabbitConfig {
     public static final String ROUTING_KEY_ENVIO_DESPACHADO = "envio.despachado";
     public static final String ROUTING_KEY_ENVIO_ENTREGADO = "envio.entregado";
 
-    public static final String QUEUE_INVENTARIO = "inventario.alertas.queue";
-    public static final String ROUTING_KEY_STOCK_CRITICO = "inventario.stock.critico";
-
     /** Cola propia de auditoria: productor y consumidor viven en este MS. */
     public static final String QUEUE_AUDITORIA = "auditoria.queue";
     public static final String ROUTING_KEY_AUDITORIA_USUARIO = "auditoria.usuario";
@@ -54,8 +52,8 @@ public class RabbitConfig {
     }
 
     @Bean
-    public DirectExchange calisatExchange() {
-        return new DirectExchange(EXCHANGE, true, false);
+    public TopicExchange calisatExchange() {
+        return new TopicExchange(EXCHANGE, true, false);
     }
 
     @Bean
@@ -101,16 +99,6 @@ public class RabbitConfig {
     @Bean
     public Binding envioEntregadoBinding() {
         return BindingBuilder.bind(enviosQueue()).to(calisatExchange()).with(ROUTING_KEY_ENVIO_ENTREGADO);
-    }
-
-    @Bean
-    public Queue inventarioAlertasQueue() {
-        return QueueBuilder.durable(QUEUE_INVENTARIO).withArguments(argumentosDeadLetter()).build();
-    }
-
-    @Bean
-    public Binding inventarioAlertasBinding() {
-        return BindingBuilder.bind(inventarioAlertasQueue()).to(calisatExchange()).with(ROUTING_KEY_STOCK_CRITICO);
     }
 
     @Bean
