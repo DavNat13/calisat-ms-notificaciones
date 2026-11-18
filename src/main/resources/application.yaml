@@ -26,10 +26,19 @@ spring:
           audience: d221f0d2-1a7c-4872-ad6c-367a1f0717ec
 
   rabbitmq:
-    host: rabbitmq
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:calisat-app}
+    password: ${SPRING_RABBITMQ_PASSWORD:Calisat2026!}
+    listener:
+      simple:
+        default-requeue-rejected: false   # fallidos -> DLX/DLQ
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2000ms
+          multiplier: 2.0
+          max-interval: 10000ms
 
   mail:
     host: smtp.gmail.com
