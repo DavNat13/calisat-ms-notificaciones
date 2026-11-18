@@ -1,5 +1,20 @@
 # Changelog - calisat-ms-notificaciones
 
+## [3.0.0] - 2026-11-18
+
+### Changed
+- **BREAKING**: `calisat.exchange` se declara como `TopicExchange` (antes `DirectExchange`); los bindings previos deben recrearse
+- **BREAKING**: se elimina la cola `inventario.alertas.queue` y sus constantes (no tenía consumidor en este microservicio)
+- El consumidor reintenta 3 veces con backoff exponencial (2 s, factor 2, tope 10 s) y `default-requeue-rejected: false`, de modo que los fallidos van a la DLQ
+- El broker se configura por entorno (`SPRING_RABBITMQ_*`); el valor por defecto apunta al clúster de `calisat-infra`
+
+### Added
+- `DlqListener` (`@RabbitListener` sobre `dlq.general.queue`) que registra en logs los mensajes no entregados
+
+### Fixed
+- `docker-compose.yml` usa el clúster RabbitMQ de `calisat-infra` (nodo `calisat-rabbit1`) en la red `calisat-net` en vez de un broker local `guest/guest`
+- Versión pom.xml actualizada a 3.0.0
+
 ## [2.4.0] - 2026-10-18
 
 ### Added
