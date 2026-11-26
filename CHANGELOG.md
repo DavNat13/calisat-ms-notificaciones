@@ -1,5 +1,11 @@
 # Changelog - calisat-ms-notificaciones
 
+## [4.1.0] - 2026-11-26
+
+### Added
+- Sincronización de destinatarios a partir de los eventos de ms-usuarios, con sub, email, nombre y rol, respetando las bajas existentes.
+- Eventos de registro con indicador de alta nueva para enviar la bienvenida solo cuando corresponde, manteniendo compatibilidad con mensajes antiguos.
+
 ## [4.0.0] - 2026-11-25
 
 ### Removed
