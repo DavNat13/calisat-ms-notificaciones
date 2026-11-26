@@ -1,5 +1,10 @@
 # Changelog - calisat-ms-notificaciones
 
+## [3.0.1] - 2026-11-25
+
+### Fixed
+- URL de carrito configurable mediante `CALISAT_URLS_CARRITO` en `docker-compose.yml` para el despliegue en 9 instancias.
+
 ## [3.0.0] - 2026-11-18
 
 ### Changed
