@@ -33,6 +33,31 @@ public class DestinatarioService {
     }
 
     /**
+     * Sincroniza el directorio con un perfil recibido de ms-usuarios. Sin sub o
+     * sin email no hace nada. Los datos vacios no pisan los existentes y nunca
+     * cambia el flag activo (una baja hecha desde el panel se respeta).
+     */
+    @Transactional(readOnly = false)
+    public void sincronizar(String azureSub, String email, String nombre, String rol) {
+        if (azureSub == null || azureSub.isBlank() || email == null || email.isBlank()) {
+            return;
+        }
+        Destinatario destinatario = destinatarioRepository
+                .findByAzureSub(azureSub)
+                .orElseGet(Destinatario::new);
+
+        destinatario.setAzureSub(azureSub);
+        destinatario.setEmail(email);
+        if (nombre != null && !nombre.isBlank()) {
+            destinatario.setNombre(nombre);
+        }
+        if (rol != null && !rol.isBlank()) {
+            destinatario.setRol(rol);
+        }
+        destinatarioRepository.save(destinatario);
+    }
+
+    /**
      * Alta o actualizacion del directorio (upsert por azureSub). Si el sub ya
      * existia se sobrescriben email, nombre y rol; activo solo si viene
      * informado para no dar de baja sin querer.

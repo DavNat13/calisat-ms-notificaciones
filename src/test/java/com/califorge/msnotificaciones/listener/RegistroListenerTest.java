@@ -5,10 +5,12 @@ import com.califorge.msnotificaciones.dto.RegistroMensaje;
 import com.califorge.msnotificaciones.model.ResultadoAuditoria;
 import com.califorge.msnotificaciones.model.TipoAuditoria;
 import com.califorge.msnotificaciones.service.AuditoriaProductor;
+import com.califorge.msnotificaciones.service.DestinatarioService;
 import com.califorge.msnotificaciones.service.EmailService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -28,8 +32,30 @@ class RegistroListenerTest {
     @Mock
     private AuditoriaProductor auditoriaProductor;
 
+    @Mock
+    private DestinatarioService destinatarioService;
+
     @InjectMocks
     private RegistroListener registroListener;
+
+    @Test
+    void altaNueva_registraDestinatarioYEnviaBienvenida() {
+        registroListener.onUsuarioRegistrado(new RegistroMensaje(
+                "id-2", "Ana", "ana@ejemplo.com", "sub-1", "cliente", true));
+
+        verify(destinatarioService).sincronizar("sub-1", "ana@ejemplo.com", "Ana", "cliente");
+        verify(emailService).enviarBienvenida("ana@ejemplo.com", "Ana");
+    }
+
+    @Test
+    void usuarioExistente_soloSincronizaElDestinatario() {
+        registroListener.onUsuarioRegistrado(new RegistroMensaje(
+                "id-3", "Ana", "ana@ejemplo.com", "sub-1", "cliente", false));
+
+        verify(destinatarioService).sincronizar("sub-1", "ana@ejemplo.com", "Ana", "cliente");
+        verify(emailService, never()).enviarBienvenida(ArgumentMatchers.any(), ArgumentMatchers.any());
+        verifyNoInteractions(auditoriaProductor);
+    }
 
     @Test
     void registroValido_enviaCorreoDeBienvenida() {
