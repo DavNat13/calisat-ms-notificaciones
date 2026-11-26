@@ -72,41 +72,6 @@ public class EmailService {
     }
 
     /**
-     * Aviso de envio despachado (va en camino) hacia el cliente.
-     */
-    public void enviarEnvioDespachado(String email, String numeroGuia, String transportista) {
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-        mensaje.setTo(email);
-        mensaje.setSubject("Tu envío va en camino");
-        String detalleTransportista = (transportista != null && !transportista.isBlank())
-                ? " con " + transportista : "";
-        mensaje.setText(
-                "Hola:\n\n"
-                        + "Tu envío con guía " + numeroGuia + " fue despachado"
-                        + detalleTransportista + ".\n\n"
-                        + "Puedes seguirlo desde el seguimiento de tu pedido.\n\n"
-                        + "Saludos equipo Calisat");
-        mailSender.send(mensaje);
-        log.info("Correo de envio despachado enviado a {}", email);
-    }
-
-    /**
-     * Aviso de envio entregado hacia el cliente.
-     */
-    public void enviarEnvioEntregado(String email, String numeroGuia) {
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-        mensaje.setTo(email);
-        mensaje.setSubject("Tu envío ha sido entregado");
-        mensaje.setText(
-                "Hola:\n\n"
-                        + "Tu envío con guía " + numeroGuia + " ha sido entregado.\n\n"
-                        + "Gracias por comprar en Calisat.\n\n"
-                        + "Saludos equipo Calisat");
-        mailSender.send(mensaje);
-        log.info("Correo de envio entregado enviado a {}", email);
-    }
-
-    /**
      * Envio generico de asunto/cuerpo tal cual los recibe (lo usa
      * EmailEnvioProvider para eventos automatizados y envio manual del admin).
      */

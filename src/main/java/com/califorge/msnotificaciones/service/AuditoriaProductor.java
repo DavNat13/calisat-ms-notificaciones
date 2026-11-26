@@ -32,10 +32,6 @@ public class AuditoriaProductor {
         publicar(mensaje, RabbitConfig.ROUTING_KEY_AUDITORIA_ORDEN);
     }
 
-    public void publicarEnvio(AuditoriaMensaje mensaje) {
-        publicar(mensaje, RabbitConfig.ROUTING_KEY_AUDITORIA_ENVIO);
-    }
-
     private void publicar(AuditoriaMensaje mensaje, String routingKey) {
         try {
             rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, routingKey, mensaje);

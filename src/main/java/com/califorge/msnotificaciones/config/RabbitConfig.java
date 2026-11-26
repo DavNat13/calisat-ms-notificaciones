@@ -15,8 +15,7 @@ import java.util.Map;
 
 /**
  * Configuracion RabbitMQ del consumidor: colas enlazadas al exchange
- * compartido calisat.exchange de los productores (ms-usuarios, ms-orden,
- * ms-envios, ms-inventario), dead-letter unificada y conversor JSON.
+ * compartido calisat.exchange de los productores (ms-usuarios y ms-orden), dead-letter unificada y conversor JSON.
  */
 @Configuration
 public class RabbitConfig {
@@ -30,15 +29,11 @@ public class RabbitConfig {
     public static final String ROUTING_KEY_ORDEN_CONFIRMADA = "orden.confirmada";
     public static final String ROUTING_KEY_ORDEN_CANCELADA = "orden.cancelada";
 
-    public static final String QUEUE_ENVIOS = "envios.queue";
-    public static final String ROUTING_KEY_ENVIO_DESPACHADO = "envio.despachado";
-    public static final String ROUTING_KEY_ENVIO_ENTREGADO = "envio.entregado";
 
     /** Cola propia de auditoria: productor y consumidor viven en este MS. */
     public static final String QUEUE_AUDITORIA = "auditoria.queue";
     public static final String ROUTING_KEY_AUDITORIA_USUARIO = "auditoria.usuario";
     public static final String ROUTING_KEY_AUDITORIA_ORDEN = "auditoria.orden";
-    public static final String ROUTING_KEY_AUDITORIA_ENVIO = "auditoria.envio";
 
     /** Exchange directo de dead-letter y clave con la que llegan los fallidos. */
     public static final String DEAD_LETTER_EXCHANGE = "calisat.dlx";
@@ -87,21 +82,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue enviosQueue() {
-        return QueueBuilder.durable(QUEUE_ENVIOS).withArguments(argumentosDeadLetter()).build();
-    }
-
-    @Bean
-    public Binding envioDespachadoBinding() {
-        return BindingBuilder.bind(enviosQueue()).to(calisatExchange()).with(ROUTING_KEY_ENVIO_DESPACHADO);
-    }
-
-    @Bean
-    public Binding envioEntregadoBinding() {
-        return BindingBuilder.bind(enviosQueue()).to(calisatExchange()).with(ROUTING_KEY_ENVIO_ENTREGADO);
-    }
-
-    @Bean
     public Queue auditoriaQueue() {
         return QueueBuilder.durable(QUEUE_AUDITORIA).withArguments(argumentosDeadLetter()).build();
     }
@@ -114,11 +94,6 @@ public class RabbitConfig {
     @Bean
     public Binding auditoriaOrdenBinding() {
         return BindingBuilder.bind(auditoriaQueue()).to(calisatExchange()).with(ROUTING_KEY_AUDITORIA_ORDEN);
-    }
-
-    @Bean
-    public Binding auditoriaEnvioBinding() {
-        return BindingBuilder.bind(auditoriaQueue()).to(calisatExchange()).with(ROUTING_KEY_AUDITORIA_ENVIO);
     }
 
     @Bean

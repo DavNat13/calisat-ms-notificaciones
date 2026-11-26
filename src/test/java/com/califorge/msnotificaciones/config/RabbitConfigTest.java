@@ -40,7 +40,7 @@ class RabbitConfigTest {
                 .toList();
 
         assertFalse(colas.contains("pagos.procesados.queue"));
-        assertEquals(List.of("auditoria.queue", "dlq.general.queue", "envios.queue",
+        assertEquals(List.of("auditoria.queue", "dlq.general.queue",
                         "notificaciones.queue", "ordenes.queue"),
                 colas);
     }
@@ -59,7 +59,6 @@ class RabbitConfigTest {
         List<Queue> colasDeTrabajo = List.of(
                 config.notificacionesQueue(),
                 config.ordenesQueue(),
-                config.enviosQueue(),
                 config.auditoriaQueue());
 
         for (Queue cola : colasDeTrabajo) {
@@ -70,16 +69,14 @@ class RabbitConfigTest {
     }
 
     @Test
-    void bindingsDeNotificacionesOrdenesYEnviosSeMantienen() {
+    void bindingsDeNotificacionesYOrdenesSeMantienen() {
         assertEquals("usuario.registrado", config.registroBinding().getRoutingKey());
         assertEquals("orden.confirmada", config.ordenConfirmadaBinding().getRoutingKey());
         assertEquals("orden.cancelada", config.ordenCanceladaBinding().getRoutingKey());
-        assertEquals("envio.despachado", config.envioDespachadoBinding().getRoutingKey());
-        assertEquals("envio.entregado", config.envioEntregadoBinding().getRoutingKey());
     }
 
     @Test
-    void colaDeAuditoriaSeEnlazaAlExchangeConTresClaves() {
+    void colaDeAuditoriaSeEnlazaAlExchangeConDosClaves() {
         assertEquals("auditoria.queue", config.auditoriaQueue().getName());
 
         assertEquals("calisat.exchange", config.auditoriaUsuarioBinding().getExchange());
@@ -88,8 +85,5 @@ class RabbitConfigTest {
 
         assertEquals("auditoria.queue", config.auditoriaOrdenBinding().getDestination());
         assertEquals("auditoria.orden", config.auditoriaOrdenBinding().getRoutingKey());
-
-        assertEquals("auditoria.queue", config.auditoriaEnvioBinding().getDestination());
-        assertEquals("auditoria.envio", config.auditoriaEnvioBinding().getRoutingKey());
     }
 }
