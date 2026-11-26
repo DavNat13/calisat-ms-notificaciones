@@ -1,5 +1,14 @@
 # Changelog - calisat-ms-notificaciones
 
+## [4.0.0] - 2026-11-25
+
+### Removed
+- **BREAKING**: se eliminan la declaración de `envios.queue`, sus bindings y su consumidor `EnvioListener`, ya que envíos no se despliega.
+- Se retiran `EnvioMensaje`, la publicación de auditoría de envíos y los correos de envío despachado y entregado.
+
+### Changed
+- Pruebas de RabbitMQ y comentarios actualizados a la topología sin envíos. La cola existente debe eliminarse del broker después de desplegar esta versión.
+
 ## [3.0.1] - 2026-11-25
 
 ### Fixed
