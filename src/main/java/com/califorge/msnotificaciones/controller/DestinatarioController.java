@@ -43,7 +43,7 @@ public class DestinatarioController {
     /**
      * POST /api/v1/destinatarios
      * Alta en el directorio (upsert por azureSub). Sin esta tabla,
-     * OrdenListener/EnvioListener no resuelven a quien enviar el correo.
+     * OrdenListener no resuelven a quien enviar el correo.
      */
     @Operation(summary = "Alta de destinatario", description = "Crea o actualiza (upsert por azureSub) un destinatario del directorio. 201 con Location; 400 si la entrada es invalida. Requiere JWT; sin roles.")
     @PostMapping

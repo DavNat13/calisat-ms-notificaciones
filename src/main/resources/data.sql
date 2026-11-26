@@ -1,4 +1,4 @@
--- Directorio de destinatarios: sin filas aqui, OrdenListener/EnvioListener
+-- Directorio de destinatarios: sin filas aqui, OrdenListener
 -- loguean "correo omitido". ON CONFLICT evita duplicar en cada arranque.
 -- Anade los tuyos con POST /api/v1/destinatarios (upsert por azure_sub).
 INSERT INTO destinatario (id, azure_sub, email, nombre, rol, activo, fecha_creacion, fecha_actualizacion)

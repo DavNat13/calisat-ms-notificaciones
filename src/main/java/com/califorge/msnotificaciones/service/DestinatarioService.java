@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * Directorio de destinatarios: alta/actualizacion por azureSub y consulta.
- * De aqui resuelven email OrdenListener, EnvioListener y el pipeline
+ * De aqui resuelven email OrdenListener y el pipeline
  * /eventos y /enviar de notificaciones.
  */
 @Service
